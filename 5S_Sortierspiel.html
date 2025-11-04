@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Lean Management – 5S Spiel</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+  }
+  h2 { color: #333; }
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    gap: 6px;
+    justify-content: center;
+    margin: 20px auto;
+  }
+  button {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+    cursor: pointer;
+    border: 1px solid #999;
+    border-radius: 6px;
+    background: white;
+  }
+  #info {
+    background: #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px auto;
+    width: 60%;
+  }
+  #result {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+  #nextStage {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  button {
+    width: 12vw;   /* statt fester Pixel → prozentual an Bildschirmbreite */
+    height: 12vw;
+    max-width: 80px;
+    max-height: 80px;
+    font-size: 3vw;
+    touch-action: manipulation; /* Bessere Touch-Reaktion */
+  }
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 6px;
+    justify-content: center;
+  }
+</style>
+
+</head>
+<body>
+
+<h1>Lean Management – 5S Trainingsspiel</h1>
+<h2 id="stageTitle">Stufe 1 – Seiton (Systematisieren)</h2>
+<p id="info">Ordne die Zahlen 1 bis 64 in aufsteigender Reihenfolge.</p>
+<p>Zeit: <span id="timer">0.0</span> s</p>
+
+<div id="grid"></div>
+<p id="result"></p>
+<button id="nextStage" style="display:none;">➡️ Weiter zur nächsten Stufe</button>
+
+<script>
+// ==============================
+// 🔧 Allgemeine Variablen
+// ==============================
+const grid = document.getElementById('grid');
+const timerDisplay = document.getElementById('timer');
+const result = document.getElementById('result');
+const nextBtn = document.getElementById('nextStage');
+const stageTitle = document.getElementById('stageTitle');
+const info = document.getElementById('info');
+
+let stage = 1;
+let timer, startTime;
+
+// ==============================
+// ⏱ Timerfunktionen
+// ==============================
+function startTimer() {
+  startTime = Date.now();
+  timer = setInterval(() => {
+    timerDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+  }, 100);
+}
+function stopTimer() {
+  clearInterval(timer);
+}
+
+// ==============================
+// 🔹 Hilfsfunktionen
+// ==============================
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+function isPrime(num) {
+  if (num < 2) return false;
+  for (let i = 2; i <= Math.sqrt(num); i++) {
+    if (num % i === 0) return false;
+  }
+  return true;
+}
+
+// ==============================
+// 🧩 STUFE 1 – Systematisieren (Seiton)
+// ==============================
+function startStage1() {
+  stageTitle.textContent = "Stufe 1 – Seiton (Systematisieren)";
+  info.textContent = "Klicke die Zahlen 1 bis 64 in der richtigen Reihenfolge.";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  grid.innerHTML = "";
+  nextBtn.style.display = "none";
+
+  let numbers = shuffle(Array.from({length: 64}, (_, i) => i + 1));
+  let current = 1, clicks = [];
+
+  numbers.forEach(n => {
+    let b = document.createElement('button');
+    b.textContent = n;
+    b.onclick = () => {
+      if (current === 1 && !startTime) startTimer();
+      if (n === current) {
+        b.disabled = true;
+        b.style.background = "#8f8";
+        clicks.push(n);
+        current++;
+        if (current > 64) {
+          stopTimer();
+          let time = ((Date.now() - startTime)/1000).toFixed(2);
+          result.innerHTML = `✅ Fertig in <b>${time}s</b>`;
+          nextBtn.style.display = "inline-block";
+        }
+      } else {
+        b.style.background = "#f88";
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ==============================
+// 🧩 STUFE 2 – Sortieren (Seiri)
+// ==============================
+function startStage2() {
+  stageTitle.textContent = "Stufe 2 – Seiri (Sortieren)";
+  info.textContent = "Sortiere alle Primzahlen (überflüssige Teile) aus.";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  grid.innerHTML = "";
+  nextBtn.style.display = "none";
+
+  let allNumbers = shuffle(Array.from({length: 64}, (_, i) => i + 1));
+  let primes = allNumbers.filter(isPrime);
+  let correct = 0, wrong = 0;
+
+  allNumbers.forEach(n => {
+    let b = document.createElement('button');
+    b.textContent = n;
+    b.onclick = () => {
+      if (!startTime) startTimer();
+      if (isPrime(n)) {
+        b.disabled = true;
+        b.style.background = "#8f8";
+        correct++;
+      } else {
+        b.style.background = "#f88";
+        wrong++;
+      }
+      if (correct === primes.length) {
+        stopTimer();
+        let time = ((Date.now() - startTime)/1000).toFixed(2);
+        result.innerHTML = `✅ Alle Primzahlen entfernt in <b>${time}s</b><br>Fehler: ${wrong}`;
+        nextBtn.style.display = "inline-block";
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ==============================
+// 🧩 STUFE 3 – Säubern (Seiso)
+// ==============================
+function startStage3() {
+  stageTitle.textContent = "Stufe 3 – Seiso (Säubern)";
+  info.textContent = "Reinige alle grauen Felder durch Anklicken.";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  grid.innerHTML = "";
+  nextBtn.style.display = "none";
+
+  let allNumbers = Array.from({length: 64}, (_, i) => i + 1);
+  let dirtyCount = 0;
+  allNumbers.forEach(n => {
+    let b = document.createElement('button');
+    b.textContent = n;
+    // 15% der Felder sind verschmutzt
+    if (Math.random() < 0.15) {
+      b.style.background = "#ccc";
+      b.classList.add("dirty");
+      dirtyCount++;
+    }
+    b.onclick = () => {
+      if (!startTime) startTimer();
+      if (b.classList.contains("dirty")) {
+        b.classList.remove("dirty");
+        b.style.background = "#8f8";
+        dirtyCount--;
+        if (dirtyCount === 0) {
+          stopTimer();
+          let time = ((Date.now() - startTime)/1000).toFixed(2);
+          result.innerHTML = `✅ Arbeitsplatz gereinigt in <b>${time}s</b>`;
+          nextBtn.style.display = "inline-block";
+        }
+      } else {
+        b.style.background = "#f88";
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ==============================
+// 🧩 STUFE 4 – Standardisieren (Seiketsu)
+// ==============================
+function startStage4() {
+  stageTitle.textContent = "Stufe 4 – Seiketsu (Standardisieren)";
+  info.textContent = "Bringe die Farben in die standardisierte Reihenfolge (rot, gelb, grün, blau).";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  grid.innerHTML = "";
+  nextBtn.style.display = "none";
+
+  const colors = ["#ff6961", "#f8d66d", "#77dd77", "#779ecb"]; // rot, gelb, grün, blau
+  let correct = 0;
+  let colorMap = {};
+
+  for (let i = 1; i <= 64; i++) {
+    let color = colors[Math.floor((i - 1) / 16)];
+    colorMap[i] = color;
+  }
+
+  let shuffled = shuffle(Array.from({length: 64}, (_, i) => i + 1));
+
+  shuffled.forEach(n => {
+    let b = document.createElement('button');
+    b.textContent = n;
+    b.onclick = () => {
+      if (!startTime) startTimer();
+      if (b.style.backgroundColor === colorMap[n]) {
+        b.style.background = "#8f8";
+      } else {
+        b.style.background = colorMap[n];
+        correct++;
+        if (correct === 64) {
+          stopTimer();
+          let time = ((Date.now() - startTime)/1000).toFixed(2);
+          result.innerHTML = `✅ Standard wiederhergestellt in <b>${time}s</b>`;
+          nextBtn.style.display = "inline-block";
+        }
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ==============================
+// 🧩 STUFE 5 – Selbstdisziplin (Shitsuke)
+// ==============================
+function startStage5() {
+  stageTitle.textContent = "Stufe 5 – Shitsuke (Selbstdisziplin)";
+  info.textContent = "Wiederhole Stufe 1, um deine Zeit zu verbessern! (Ergebnis wird gespeichert)";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  grid.innerHTML = "";
+  nextBtn.style.display = "none";
+
+  let numbers = shuffle(Array.from({length: 64}, (_, i) => i + 1));
+  let current = 1;
+
+  numbers.forEach(n => {
+    let b = document.createElement('button');
+    b.textContent = n;
+    b.onclick = () => {
+      if (current === 1 && !startTime) startTimer();
+      if (n === current) {
+        b.disabled = true;
+        b.style.background = "#8f8";
+        current++;
+        if (current > 64) {
+          stopTimer();
+          let totalTime = ((Date.now() - startTime)/1000).toFixed(2);
+          let best = localStorage.getItem('bestTime');
+          if (!best || totalTime < best) {
+            localStorage.setItem('bestTime', totalTime);
+            result.innerHTML = `🏆 Neuer Rekord: ${totalTime}s`;
+          } else {
+            result.innerHTML = `✅ Fertig in ${totalTime}s (Bester bisher: ${best}s)`;
+          }
+        }
+      } else {
+        b.style.background = "#f88";
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ==============================
+// 🔁 Steuerung der Phasen
+// ==============================
+nextBtn.onclick = () => {
+  stage++;
+  grid.innerHTML = "";
+  result.textContent = "";
+  stopTimer();
+  startTime = null;
+  if (stage === 2) startStage2();
+  else if (stage === 3) startStage3();
+  else if (stage === 4) startStage4();
+  else if (stage === 5) startStage5();
+  else {
+    stage = 1;
+    startStage1();
+  }
+};
+
+// 🔰 Start des Spiels
+startStage1();
+</script>
+</body>
+</html>
