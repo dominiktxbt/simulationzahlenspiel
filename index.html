@@ -1,38 +1,26 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
 <title>5S Spiel – Stufen 0–4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --button-size: 50px; /* Einheitliche Button-Größe */
-  }
-
-  body { 
-    font-family: Arial, sans-serif; 
-    text-align: center; 
-    background: #f5f5f5; 
-    margin: 0; 
-    padding: 20px; 
-  }
+  body { font-family: Arial, sans-serif; text-align: center; background: #f5f5f5; margin: 0; padding: 20px; }
   h1 { margin-bottom: 10px; font-size: 2em; }
   h2 { font-size: 1.3em; margin: 5px 0; }
 
   /* Grid für Spielfeld */
   #grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--button-size), 1fr));
     gap: 6px;
     justify-items: center;
     margin: 20px auto;
-    max-width: calc(var(--button-size) * 8 + 48px); /* 8 Buttons + Gaps */
+    max-width: 500px;
   }
-
   #grid button {
-    width: var(--button-size);
-    height: var(--button-size);
-    font-size: 0.9em;
+    width: 50px;
+    height: 50px;
+    font-size: 1em;
     border: 1px solid #aaa;
     border-radius: 6px;
     cursor: pointer;
@@ -46,7 +34,7 @@
   }
   #grid button:active { transform: scale(0.95); }
 
-  /* Stufenwechsel-Buttons */
+  /* Stufenwechsel-Buttons kompakt */
   #stageButtons {
     margin: 15px auto;
     display: flex;
@@ -55,8 +43,8 @@
     gap: 6px;
   }
   #stageButtons button {
-    width: var(--button-size);
-    height: var(--button-size);
+    width: 50px;
+    height: 50px;
     font-size: 0.75em;
     border-radius: 4px;
     cursor: pointer;
@@ -75,29 +63,34 @@
     border-radius: 6px; 
   }
 
-  #info { 
-    margin-top: 10px; 
-    padding: 8px; 
-    background: #e0e0e0; 
-    border-radius: 6px; 
-    width: 90%; 
-    max-width: 500px; 
-    margin-left:auto; 
-    margin-right:auto; 
-    font-size: 1em; 
+  #info { margin-top: 10px; padding: 8px; background: #e0e0e0; border-radius: 6px; width: 90%; max-width: 500px; margin-left:auto; margin-right:auto; font-size: 1em; }
+  #result { font-weight: bold; margin-top: 15px; font-size: 1.1em; }
+
+  /* Quadranten für Stufe 2–4 */
+  .quadrant-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 6px;
+    justify-items: center;
+    max-width: 500px;
+    margin: 20px auto;
   }
-  #result { 
-    font-weight: bold; 
-    margin-top: 15px; 
-    font-size: 1.1em; 
+  .quadrant {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 4px;
   }
 
   /* Responsive Anpassung */
   @media (max-width: 600px){
-    :root { --button-size: 40px; }
+    #grid button { width: 40px; height: 40px; font-size: 0.9em; }
+    #stageButtons button { width: 40px; height: 40px; font-size: 0.7em; }
   }
   @media (max-width: 400px){
-    :root { --button-size: 30px; }
+    #grid button { width: 30px; height: 30px; font-size: 0.8em; }
+    #stageButtons button { width: 35px; height: 35px; font-size: 0.65em; }
   }
 </style>
 </head>
@@ -157,7 +150,28 @@ function createButtons(numbers, onClickFunc, colorFunc=null) {
   });
 }
 
+// ===== Quadrant-Layout für Stufe 2–4 =====
+function createQuadrantGrid(numbers, onClickFunc, colorFunc=null) {
+  grid.innerHTML = "";
+  grid.className="quadrant-grid";
+  const quadrants = [numbers.slice(0,9), numbers.slice(9,19), numbers.slice(19,29), numbers.slice(29,40)];
+  quadrants.forEach(nums => {
+    const q = document.createElement("div");
+    q.className="quadrant";
+    nums.forEach(n=>{
+      const b = document.createElement("button");
+      b.textContent=n;
+      b.style.color = colorFunc ? colorFunc(n) : randomColor();
+      b.onclick = ()=>onClickFunc(n,b);
+      q.appendChild(b);
+    });
+    grid.appendChild(q);
+  });
+}
+
 // ===== Stufen =====
+
+// --- Stufe 0 ---
 function stage0() {
   stageTitle.textContent="Stufe 0 – Farbenchaos";
   info.textContent="Klicke die Zahlen 1–64 in richtiger Reihenfolge.";
@@ -176,6 +190,7 @@ function stage0() {
   });
 }
 
+// --- Stufe 1 ---
 function stage1() {
   stageTitle.textContent="Stufe 1 – Zahlen 41–64 wegklicken";
   info.textContent="Klicke 41–64, danach 1–40 in Farbenchaos-Spiel.";
@@ -205,15 +220,16 @@ function stage1_ordered() {
   });
 }
 
+// --- Stufe 2 ---
 function stage2() {
   stageTitle.textContent="Stufe 2 – Gruppierungen";
-  info.textContent="Klicke 1–40 nach Gruppen in Ecken (1–9,10–19,20–29,30–40).";
-  grid.className="stage2"; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none";
+  info.textContent="Klicke 1–40 in Reihenfolge, nach Quadranten sortiert.";
+  result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none";
 
   let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
   let current=1;
 
-  createButtons(numbers,(n,b)=>{
+  createQuadrantGrid(numbers,(n,b)=>{
     if(current===1 && !startTime) startTimer();
     b.style.color = ["#ff6961","#f8d66d","#77dd77","#779ecb"][Math.floor((n-1)/10)];
     if(n===current){ b.disabled=true; b.style.background="#8f8"; current++;
@@ -222,20 +238,21 @@ function stage2() {
   });
 }
 
+// --- Stufe 3 ---
 function stage3() {
   stageTitle.textContent="Stufe 3 – Säuberung";
-  info.textContent="Klicke 'Säubern', dann Farbenchaos-Spiel erneut.";
-  grid.className=""; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none"; cleanBtn.style.display="inline-block";
+  info.textContent="Klicke 'Säubern', dann Quadranten-Spiel erneut.";
+  result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none"; cleanBtn.style.display="inline-block";
 
   let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
-  createButtons(numbers,(n,b)=>{}); // nur anzeigen
+  createQuadrantGrid(numbers,(n,b)=>{}); // nur anzeigen
 
   cleanBtn.onclick=()=>{
     cleanBtn.style.display="none";
-    for(let b of grid.children){ b.style.color="#000"; b.disabled=false; b.style.background="white"; }
+    for(let b of grid.querySelectorAll("button")){ b.style.color="#000"; b.disabled=false; b.style.background="white"; }
     let current=1; startTime=null; timerDisplay.textContent="0.0";
-    for(let b of grid.children){
-      b.onclick=()=>{
+    for(let b of grid.querySelectorAll("button")){
+      b.onclick=()=>{ 
         if(current===1 && !startTime) startTimer();
         if(parseInt(b.textContent)===current){ b.disabled=true; b.style.background="#8f8"; current++;
           if(current>40){ stopTimer(); result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
@@ -245,20 +262,21 @@ function stage3() {
   };
 }
 
+// --- Stufe 4 ---
 function stage4() {
   stageTitle.textContent="Stufe 4 – Ordnen & Finale";
   info.textContent="Klicke 'Ordnen', danach letzte Reihenfolge-Spiel mit allen Zahlen.";
-  grid.className=""; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null;
+  grid.className="quadrant-grid"; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null;
   nextBtn.style.display="none"; sortBtn.style.display="inline-block";
 
   let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
-  createButtons(numbers,(n,b)=>{ b.disabled=true; }, n=>"#000"); // alle schwarz
+  createQuadrantGrid(numbers,(n,b)=>{ b.disabled=true; }, n=>"#000"); // alle schwarz
 
   sortBtn.onclick=()=>{
     sortBtn.style.display="none";
     let orderedNumbers = [...Array(40).keys()].map(x=>x+1);
     let current=1;
-    createButtons(orderedNumbers,(n,b)=>{
+    createQuadrantGrid(orderedNumbers,(n,b)=>{
       if(current===1 && !startTime) startTimer();
       if(parseInt(b.textContent)===current){
         b.disabled=true; b.style.background="#8f8"; current++;
