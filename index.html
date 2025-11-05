@@ -7,12 +7,23 @@
 <style>
   body { font-family: Arial, sans-serif; text-align: center; background: #f5f5f5; margin: 0; padding: 20px; }
   h1 { margin-bottom: 10px; }
-  #grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 6px; justify-content: center; max-width: 500px; margin: 20px auto; }
-  button { width: 12vw; height: 12vw; max-width: 70px; max-height: 70px; font-size: 3vw; border: 1px solid #aaa; border-radius: 8px; cursor: pointer; background: white; touch-action: manipulation; }
+  #grid {
+    display: grid;
+    gap: 6px;
+    justify-content: center;
+    max-width: 500px;
+    margin: 20px auto;
+  }
+  button {
+    width: 12vw; height: 12vw; max-width: 70px; max-height: 70px;
+    font-size: 3vw; border: 1px solid #aaa; border-radius: 8px;
+    cursor: pointer; background: white; touch-action: manipulation;
+  }
   #controls { margin: 10px auto; }
-  #info { margin-top: 10px; padding: 8px; background: #e0e0e0; border-radius: 6px; width: 80%; margin-left: auto; margin-right: auto; }
+  #info { margin-top: 10px; padding: 8px; background: #e0e0e0; border-radius: 6px; width: 80%; margin-left:auto; margin-right:auto; }
   #result { font-weight: bold; margin-top: 15px; }
   #nextStage, #cleanBtn, #sortBtn { padding: 8px 16px; font-size: 16px; margin-top: 10px; cursor: pointer; display: none; }
+  #grid.stage2 { grid-template-columns: repeat(9, 1fr); }
 </style>
 </head>
 <body>
@@ -45,224 +56,165 @@ const info = document.getElementById("info");
 let stage = 0;
 let startTime, timer;
 
-function startTimer() {
-  startTime = Date.now();
-  timer = setInterval(() => { timerDisplay.textContent = ((Date.now() - startTime)/1000).toFixed(1); }, 100);
-}
+function startTimer() { startTime = Date.now(); timer = setInterval(() => { timerDisplay.textContent = ((Date.now()-startTime)/1000).toFixed(1); },100); }
 function stopTimer() { clearInterval(timer); }
-function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-function randomColor() { return "hsl(" + Math.floor(Math.random()*360) + ",80%,40%)"; }
+function shuffle(arr) { return arr.sort(()=>Math.random()-0.5); }
+function randomColor() { return "hsl("+Math.floor(Math.random()*360)+",80%,40%)"; }
 
-// ---------- STUFE 0 ----------
-function stage0() {
-  stageTitle.textContent = "Stufe 0 – Farbenchaos";
-  info.textContent = "Klicke die Zahlen 1 bis 64 in richtiger Reihenfolge.";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
+function createButtons(numbers, onClickFunc) {
   grid.innerHTML = "";
-  nextBtn.style.display = "none";
-  cleanBtn.style.display = "none";
-  sortBtn.style.display = "none";
-  startTime = null;
-
-  let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
-  let current = 1;
-
   numbers.forEach(n => {
     const b = document.createElement("button");
     b.textContent = n;
     b.style.color = randomColor();
-    b.onclick = () => {
-      if (current === 1 && !startTime) startTimer();
-      if (n === current) {
-        b.disabled = true;
-        b.style.background = "#8f8";
-        current++;
-        if (current > 64) { stopTimer(); result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display = "inline-block"; }
-      } else { b.style.background = "#f88"; }
-    };
+    b.onclick = () => onClickFunc(n,b);
     grid.appendChild(b);
+  });
+}
+
+// ---------- STUFE 0 ----------
+function stage0() {
+  stageTitle.textContent="Stufe 0 – Farbenchaos";
+  info.textContent="Klicke die Zahlen 1–64 in richtiger Reihenfolge.";
+  grid.className = "";
+  result.textContent=""; timerDisplay.textContent="0.0";
+  nextBtn.style.display="none"; cleanBtn.style.display="none"; sortBtn.style.display="none";
+  startTime=null;
+
+  let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
+  let current = 1;
+
+  createButtons(numbers,(n,b)=>{
+    if(current===1 && !startTime) startTimer();
+    if(n===current){ b.disabled=true; b.style.background="#8f8"; current++;
+      if(current>64){ stopTimer(); result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
+    } else { b.style.background="#f88"; }
   });
 }
 
 // ---------- STUFE 1 ----------
 function stage1() {
-  stageTitle.textContent = "Stufe 1 – Zahlen 41–64 wegklicken";
-  info.textContent = "Klicke alle Zahlen 41–64, danach 1–40 in Reihenfolge anklicken.";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
-  grid.innerHTML = "";
-  nextBtn.style.display = "none";
-  startTime = null;
+  stageTitle.textContent="Stufe 1 – Zahlen 41–64 wegklicken";
+  info.textContent="Klicke 41–64, danach 1–40 in Farbenchaos-Spiel.";
+  result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none"; startTime=null;
 
   let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
-  let removed = 0;
+  let removed=0;
 
-  numbers.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = randomColor();
-    b.onclick = () => {
-      if (n >= 41) { b.disabled = true; b.style.background = "#f88"; removed++; if (removed === 24) stage1_ordered(); }
-    };
-    grid.appendChild(b);
+  createButtons(numbers,(n,b)=>{
+    if(n>=41){ b.disabled=true; b.style.background="#f88"; removed++; if(removed===24) stage1_ordered(); }
   });
 }
 
 function stage1_ordered() {
-  grid.innerHTML = "";
-  info.textContent = "Jetzt klicke die Zahlen 1–40 in richtiger Reihenfolge!";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
-  startTime = null;
+  stageTitle.textContent="Stufe 1 – Zahlen 1–40 Reihenfolge";
+  info.textContent="Klicke 1–40 in richtiger Reihenfolge.";
+  result.textContent=""; timerDisplay.textContent="0.0"; startTime=null;
 
   let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
-  let current = 1;
+  let current=1;
 
-  numbers.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = randomColor();
-    b.onclick = () => {
-      if (current === 1 && !startTime) startTimer();
-      if (n === current) { b.disabled = true; b.style.background = "#8f8"; current++; if (current > 40) { stopTimer(); result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display = "inline-block"; } }
-      else { b.style.background = "#f88"; }
-    };
-    grid.appendChild(b);
+  createButtons(numbers,(n,b)=>{
+    if(current===1 && !startTime) startTimer();
+    if(n===current){ b.disabled=true; b.style.background="#8f8"; current++;
+      if(current>40){ stopTimer(); result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
+    } else { b.style.background="#f88"; }
   });
 }
 
 // ---------- STUFE 2 ----------
 function stage2() {
-  stageTitle.textContent = "Stufe 2 – Gruppierungen";
-  info.textContent = "Klicke Zahlen 41–64 weg, danach 1–40 in Farbgruppen anklicken.";
-  grid.innerHTML = "";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
-  startTime = null;
-  nextBtn.style.display = "none";
-
-  let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
-  let removed = 0;
-
-  numbers.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = randomColor();
-    b.onclick = () => {
-      if (n >= 41) { b.disabled = true; b.style.background = "#f88"; removed++; if (removed === 24) stage2_ordered(); }
-    };
-    grid.appendChild(b);
-  });
-}
-
-function stage2_ordered() {
-  grid.innerHTML = "";
-  info.textContent = "Klicke 1–40 in Farbgruppen: 1–9 rot, 10–19 gelb, 20–29 grün, 30–40 blau.";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
-  startTime = null;
+  stageTitle.textContent="Stufe 2 – Gruppierungen";
+  info.textContent="Klicke 1–40 nach Gruppen in Ecken (1–9,10–19,20–29,30–40).";
+  grid.className="stage2"; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none";
 
   let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
-  let colors = ["#ff6961","#f8d66d","#77dd77","#779ecb"];
-  let current = 1;
+  let current=1;
 
-  numbers.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = colors[Math.floor((n-1)/10)];
-    b.onclick = () => {
-      if (current === 1 && !startTime) startTimer();
-      if (n === current) { b.disabled = true; b.style.background = "#8f8"; current++; if (current > 40) { stopTimer(); result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display = "inline-block"; } }
-      else { b.style.background = "#f88"; }
-    };
-    grid.appendChild(b);
+  createButtons(numbers,(n,b)=>{
+    if(current===1 && !startTime) startTimer();
+    b.style.color = ["#ff6961","#f8d66d","#77dd77","#779ecb"][Math.floor((n-1)/10)];
+    if(n===current){ b.disabled=true; b.style.background="#8f8"; current++;
+      if(current>40){ stopTimer(); result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
+    } else { b.style.background="#f88"; }
   });
 }
 
 // ---------- STUFE 3 ----------
 function stage3() {
-  stageTitle.textContent = "Stufe 3 – Säuberung";
-  info.textContent = "Klicke 'Säubern', dann 1–40 Reihenfolge-Spiel.";
-  grid.innerHTML = "";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
-  startTime = null;
-  nextBtn.style.display = "none";
-  cleanBtn.style.display = "inline-block";
+  stageTitle.textContent="Stufe 3 – Säuberung";
+  info.textContent="Klicke 'Säubern', dann Farbenchaos-Spiel erneut.";
+  grid.className=""; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none"; cleanBtn.style.display="inline-block";
 
   let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
-  numbers.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = randomColor();
-    grid.appendChild(b);
-  });
+  createButtons(numbers,(n,b)=>{}); // nur anzeigen
 
-  cleanBtn.onclick = () => {
-    cleanBtn.style.display = "none";
-    for (let b of grid.children) b.style.color = "#000"; // gleiche Farbe
-    stage3_ordered();
+  cleanBtn.onclick=()=>{
+    cleanBtn.style.display="none";
+    for(let b of grid.children){ b.style.color="#000"; b.disabled=false; b.style.background="white"; }
+    let current=1; startTime=null; timerDisplay.textContent="0.0";
+    for(let b of grid.children){
+      b.onclick=()=>{
+        if(current===1 && !startTime) startTimer();
+        if(parseInt(b.textContent)===current){ b.disabled=true; b.style.background="#8f8"; current++;
+          if(current>40){ stopTimer(); result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
+        } else { b.style.background="#f88"; }
+      }
+    }
   };
-}
-
-function stage3_ordered() {
-  let current = 1;
-  startTime = null;
-  timerDisplay.textContent = "0.0";
-  for (let b of grid.children) {
-    b.disabled = false;
-    b.style.background = "white";
-    b.onclick = () => {
-      if (current === 1 && !startTime) startTimer();
-      if (parseInt(b.textContent) === current) { b.disabled = true; b.style.background = "#8f8"; current++; if (current>40) { stopTimer(); result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; } }
-      else { b.style.background = "#f88"; }
-    };
-  }
 }
 
 // ---------- STUFE 4 ----------
 function stage4() {
-  stageTitle.textContent = "Stufe 4 – Standardisieren";
-  info.textContent = "Klicke 'Ordnen', dann letzte Reihenfolge-Spiel 1–40.";
-  grid.innerHTML = "";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
-  startTime = null;
-  nextBtn.style.display = "none";
-  sortBtn.style.display = "inline-block";
+  stageTitle.textContent="Stufe 4 – Ordnen & Finale";
+  info.textContent="Klicke 'Ordnen', danach letzte Reihenfolge-Spiel mit allen Zahlen.";
+  grid.className=""; result.textContent=""; timerDisplay.textContent="0.0"; startTime=null;
+  nextBtn.style.display="none"; sortBtn.style.display="inline-block";
 
-  let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
-  numbers.forEach(n => {
+  // Initial durcheinander, aber schwarz
+  let numbers = [...Array(40).keys()].map(x=>x+1);
+  numbers = shuffle(numbers);
+  grid.innerHTML="";
+  numbers.forEach(n=>{
     const b = document.createElement("button");
     b.textContent = n;
-    b.style.color = randomColor();
+    b.style.color="#000"; b.style.background="white"; b.disabled=false;
     grid.appendChild(b);
   });
 
-  sortBtn.onclick = () => {
-    sortBtn.style.display = "none";
+  sortBtn.onclick=()=>{
+    sortBtn.style.display="none";
     let orderedNumbers = [...Array(40).keys()].map(x=>x+1);
-    let i = 0;
-    for (let b of grid.children) {
-      b.textContent = orderedNumbers[i];
-      b.style.color = "#000";
-      b.disabled = false;
-      b.style.background = "white";
-      i++;
+    grid.innerHTML="";
+    orderedNumbers.forEach(n=>{
+      const b = document.createElement("button");
+      b.textContent = n;
+      b.style.color="#000"; b.style.background="white"; b.disabled=false;
+      grid.appendChild(b);
+    });
+
+    // Reihenfolge-Spiel starten
+    let current = 1; startTime=null; timerDisplay.textContent="0.0";
+    for(let b of grid.children){
+      b.onclick=()=>{
+        if(current===1 && !startTime) startTimer();
+        if(parseInt(b.textContent)===current){
+          b.disabled=true; b.style.background="#8f8"; current++;
+          if(current>40){ stopTimer(); result.textContent=`✅ Finale Spiel abgeschlossen in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
+        } else { b.style.background="#f88"; }
+      }
     }
-    stage3_ordered(); // wieder Reihenfolge-Spiel wie in Stufe 3
   };
 }
 
 // ---------- Steuerung ----------
-nextBtn.onclick = () => {
+nextBtn.onclick=()=>{
   stage++;
   if(stage===1) stage1();
   else if(stage===2) stage2();
   else if(stage===3) stage3();
   else if(stage===4) stage4();
-  else { stage=0; stage0(); }
+  else{ stage=0; stage0(); }
 };
 
 // Start
