@@ -24,7 +24,7 @@
     margin: 20px auto;
     max-width: 500px;
   }
-  button {
+  #grid button {
     width: 100%;
     aspect-ratio: 1 / 1;
     font-size: 1em;
@@ -39,9 +39,9 @@
     box-sizing: border-box;
     transition: transform 0.1s, background 0.2s;
   }
-  button:active { transform: scale(0.95); }
+  #grid button:active { transform: scale(0.95); }
 
-  /* Stufenwechsel-Buttons */
+  /* Stufenwechsel-Buttons kompakt */
   #stageButtons {
     margin: 15px auto;
     display: flex;
@@ -50,11 +50,13 @@
     gap: 6px;
   }
   #stageButtons button {
-    padding: 4px 8px;
-    font-size: 0.8em;
+    width: 50px;        /* ca. 1/6 der Spielfeld-Buttons */
+    height: 50px;
+    font-size: 0.75em;
     border-radius: 4px;
-    min-width: 40px;
     cursor: pointer;
+    padding: 0;
+    line-height: 1;
   }
 
   /* Steuerungsbuttons */
@@ -88,11 +90,13 @@
   /* Responsive Anpassung */
   @media (max-width: 600px){
     #grid { grid-template-columns: repeat(auto-fit, minmax(35px, 1fr)); }
-    button { font-size: 0.9em; }
+    #grid button { font-size: 0.9em; }
+    #stageButtons button { width: 40px; height: 40px; font-size: 0.7em; }
   }
   @media (max-width: 400px){
     #grid { grid-template-columns: repeat(auto-fit, minmax(28px, 1fr)); }
-    button { font-size: 0.8em; }
+    #grid button { font-size: 0.8em; }
+    #stageButtons button { width: 35px; height: 35px; font-size: 0.65em; }
   }
 </style>
 </head>
@@ -101,11 +105,11 @@
 <h1>5S Trainingsspiel – Stufen 0–4</h1>
 
 <div id="stageButtons">
-  <button onclick="switchStage(0)">Stufe 0</button>
-  <button onclick="switchStage(1)">Stufe 1</button>
-  <button onclick="switchStage(2)">Stufe 2</button>
-  <button onclick="switchStage(3)">Stufe 3</button>
-  <button onclick="switchStage(4)">Stufe 4</button>
+  <button onclick="switchStage(0)">0</button>
+  <button onclick="switchStage(1)">1</button>
+  <button onclick="switchStage(2)">2</button>
+  <button onclick="switchStage(3)">3</button>
+  <button onclick="switchStage(4)">4</button>
 </div>
 
 <h2 id="stageTitle">Stufe 0 – Farbenchaos</h2>
