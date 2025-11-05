@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Lean Management – 5S Spiel (Überarbeitet)</title>
+<title>5S Spiel – Überarbeitet Stufen 0–4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
@@ -33,12 +33,7 @@
     background: white;
     touch-action: manipulation;
   }
-  #controls {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
+  #controls { margin: 10px auto; }
   #info {
     margin-top: 10px;
     padding: 8px;
@@ -48,25 +43,29 @@
     margin-left: auto;
     margin-right: auto;
   }
-  #result {
-    font-weight: bold;
-    margin-top: 15px;
+  #result { font-weight: bold; margin-top: 15px; }
+  #nextStage, #cleanBtn, #sortBtn {
+    padding: 8px 16px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    display: none;
   }
 </style>
 </head>
 <body>
 
-<h1>Lean Management – 5S Trainingsspiel (Neue Version)</h1>
+<h1>5S Trainingsspiel – Stufen 0–4</h1>
 <h2 id="stageTitle">Stufe 0 – Farbenchaos</h2>
-<p id="info">Klicke die Zahlen 1 bis 64 in der richtigen Reihenfolge.</p>
+<p id="info">Klicke die Zahlen 1 bis 64 in richtiger Reihenfolge.</p>
 <p>Zeit: <span id="timer">0.0</span> s</p>
 
 <div id="grid"></div>
 
 <div id="controls">
-  <button id="cleanBtn" style="display:none;">🧹 Säubern</button>
-  <button id="sortBtn" style="display:none;">🔢 Ordnen</button>
-  <button id="nextStage" style="display:none;">➡️ Weiter</button>
+  <button id="cleanBtn">🧹 Säubern</button>
+  <button id="sortBtn">🔢 Ordnen</button>
+  <button id="nextStage">➡️ Weiter</button>
 </div>
 
 <p id="result"></p>
@@ -82,34 +81,34 @@ const stageTitle = document.getElementById("stageTitle");
 const info = document.getElementById("info");
 
 let stage = 0;
-let timer, startTime;
+let startTime, timer;
 
 function startTimer() {
   startTime = Date.now();
   timer = setInterval(() => {
-    timerDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+    timerDisplay.textContent = ((Date.now() - startTime)/1000).toFixed(1);
   }, 100);
 }
 function stopTimer() { clearInterval(timer); }
 
-// Zufall und Farbgenerator
 function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-function randomColor() {
-  return "hsl(" + Math.floor(Math.random() * 360) + ",80%,40%)";
-}
+function randomColor() { return "hsl(" + Math.floor(Math.random()*360) + ",80%,40%)"; }
 
 // ---------- STUFE 0 ----------
 function stage0() {
   stageTitle.textContent = "Stufe 0 – Farbenchaos";
   info.textContent = "Klicke die Zahlen 1 bis 64 in richtiger Reihenfolge.";
   result.textContent = "";
+  timerDisplay.textContent = "0.0";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
   cleanBtn.style.display = "none";
   sortBtn.style.display = "none";
+  startTime = null;
 
-  let numbers = shuffle([...Array(64).keys()].map(x => x+1));
+  let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
   let current = 1;
+
   numbers.forEach(n => {
     const b = document.createElement("button");
     b.textContent = n;
@@ -125,9 +124,7 @@ function stage0() {
           result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
           nextBtn.style.display = "inline-block";
         }
-      } else {
-        b.style.background = "#f88";
-      }
+      } else { b.style.background = "#f88"; }
     };
     grid.appendChild(b);
   });
@@ -135,38 +132,45 @@ function stage0() {
 
 // ---------- STUFE 1 ----------
 function stage1() {
-  stageTitle.textContent = "Stufe 1 – Reduktion";
-  info.textContent = "Zahlen 41–64 aussortieren, dann mit 40 Zahlen weiterspielen.";
+  stageTitle.textContent = "Stufe 1 – Zahlen 41–64 wegklicken";
+  info.textContent = "Klicke alle Zahlen 41–64, danach 1–40 in Reihenfolge anklicken.";
   result.textContent = "";
+  timerDisplay.textContent = "0.0";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
+  startTime = null;
 
-  let numbers = shuffle([...Array(64).keys()].map(x => x+1));
+  let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
+  let removed = 0;
+
   numbers.forEach(n => {
     const b = document.createElement("button");
     b.textContent = n;
+    b.style.color = randomColor();
     b.onclick = () => {
       if (n >= 41) {
         b.disabled = true;
         b.style.background = "#f88";
-      } else {
-        b.disabled = true;
-        b.style.background = "#8f8";
-      }
-      if ([...grid.children].filter(btn => !btn.disabled).length === 0) {
-        // Jetzt das 40er Spiel starten
-        setTimeout(() => stage0_reduced(), 1000);
+        removed++;
+        if (removed === 24) { // alle 41–64 weg
+          stage1_ordered();
+        }
       }
     };
     grid.appendChild(b);
   });
 }
 
-function stage0_reduced() {
-  info.textContent = "Spiele mit 40 Zahlen in richtiger Reihenfolge.";
+function stage1_ordered() {
   grid.innerHTML = "";
-  let numbers = shuffle([...Array(40).keys()].map(x => x+1));
+  info.textContent = "Jetzt klicke die Zahlen 1–40 in richtiger Reihenfolge!";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  startTime = null;
+
+  let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
   let current = 1;
+
   numbers.forEach(n => {
     const b = document.createElement("button");
     b.textContent = n;
@@ -182,7 +186,7 @@ function stage0_reduced() {
           result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
           nextBtn.style.display = "inline-block";
         }
-      }
+      } else { b.style.background = "#f88"; }
     };
     grid.appendChild(b);
   });
@@ -191,76 +195,46 @@ function stage0_reduced() {
 // ---------- STUFE 2 ----------
 function stage2() {
   stageTitle.textContent = "Stufe 2 – Gruppierungen";
-  info.textContent = "Zahlen 1–40 in farbige Gruppen an verschiedenen Positionen.";
+  info.textContent = "Klicke Zahlen 41–64 weg, danach 1–40 in Farbgruppen anklicken.";
   result.textContent = "";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
+  startTime = null;
 
-  const colorGroups = ["#ff6961","#f8d66d","#77dd77","#779ecb"];
-  const positions = [[],[],[],[]];
-  let nums = [...Array(40).keys()].map(x=>x+1);
-  nums.forEach(n => {
-    let group = Math.floor((n-1)/10);
-    positions[group].push(n);
-  });
-  let ordered = [...positions[0],...positions[1],...positions[2],...positions[3]];
-  let shuffled = shuffle(ordered);
-
-  let current = 1;
-  shuffled.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = colorGroups[Math.floor((n-1)/10)];
-    b.onclick = () => {
-      if (current === 1 && !startTime) startTimer();
-      if (n === current) {
-        b.disabled = true;
-        b.style.background = "#8f8";
-        current++;
-        if (current > 40) {
-          stopTimer();
-          result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
-          nextBtn.style.display = "inline-block";
-        }
-      }
-    };
-    grid.appendChild(b);
-  });
-}
-
-// ---------- STUFE 3 ----------
-function stage3() {
-  stageTitle.textContent = "Stufe 3 – Säuberung";
-  info.textContent = "Klicke 'Säubern', um alle Schriftfarben zu vereinheitlichen, dann spiele erneut.";
-  result.textContent = "";
-  grid.innerHTML = "";
-  nextBtn.style.display = "none";
-  cleanBtn.style.display = "inline-block";
-  sortBtn.style.display = "none";
-
-  let numbers = shuffle([...Array(40).keys()].map(x => x+1));
-  let current = 1;
+  let numbers = shuffle([...Array(64).keys()].map(x=>x+1));
+  let removed = 0;
 
   numbers.forEach(n => {
     const b = document.createElement("button");
     b.textContent = n;
     b.style.color = randomColor();
+    b.onclick = () => {
+      if (n >= 41) {
+        b.disabled = true;
+        b.style.background = "#f88";
+        removed++;
+        if (removed === 24) stage2_ordered();
+      }
+    };
     grid.appendChild(b);
   });
-
-  cleanBtn.onclick = () => {
-    for (let b of grid.children) b.style.color = "#222";
-    cleanBtn.style.display = "none";
-    // Jetzt das normale Spiel starten
-    startColorlessGame();
-  };
 }
 
-function startColorlessGame() {
+function stage2_ordered() {
+  grid.innerHTML = "";
+  info.textContent = "Jetzt klicke 1–40 in Farbgruppen: 1–9 rot, 10–19 gelb, 20–29 grün, 30–40 blau.";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  startTime = null;
+
+  let numbers = shuffle([...Array(40).keys()].map(x=>x+1));
+  let colors = ["#ff6961","#f8d66d","#77dd77","#779ecb"];
   let current = 1;
-  for (let b of grid.children) {
-    const n = parseInt(b.textContent);
-    b.disabled = false;
+
+  numbers.forEach(n => {
+    const b = document.createElement("button");
+    b.textContent = n;
+    b.style.color = colors[Math.floor((n-1)/10)];
     b.onclick = () => {
       if (current === 1 && !startTime) startTimer();
       if (n === current) {
@@ -272,72 +246,10 @@ function startColorlessGame() {
           result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
           nextBtn.style.display = "inline-block";
         }
-      } else {
-        b.style.background = "#f88";
-      }
+      } else { b.style.background = "#f88"; }
     };
-  }
-}
-
-// ---------- STUFE 4 ----------
-function stage4() {
-  stageTitle.textContent = "Stufe 4 – Standardisieren";
-  info.textContent = "Klicke 'Ordnen', um alle Zahlen zu sortieren, dann spiele ein letztes Mal.";
-  result.textContent = "";
-  grid.innerHTML = "";
-  nextBtn.style.display = "none";
-  sortBtn.style.display = "inline-block";
-  cleanBtn.style.display = "none";
-
-  let numbers = shuffle([...Array(40).keys()].map(x => x+1));
-  numbers.forEach(n => {
-    const b = document.createElement("button");
-    b.textContent = n;
-    b.style.color = "#333";
     grid.appendChild(b);
   });
-
-  sortBtn.onclick = () => {
-    grid.innerHTML = "";
-    for (let i=1;i<=40;i++) {
-      const b = document.createElement("button");
-      b.textContent = i;
-      b.style.color = "#333";
-      b.onclick = () => {
-        if (i === 1 && !startTime) startTimer();
-        if (i === current) {
-          b.disabled = true;
-          b.style.background = "#8f8";
-          current++;
-          if (current > 40) {
-            stopTimer();
-            result.textContent = `✅ Letztes Spiel beendet in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
-            nextBtn.style.display = "none";
-          }
-        }
-      };
-      grid.appendChild(b);
-    }
-    sortBtn.style.display = "none";
-    current = 1;
-  };
 }
 
-// ---------- Steuerung ----------
-nextBtn.onclick = () => {
-  stage++;
-  startTime = null;
-  stopTimer();
-  if (stage === 1) stage1();
-  else if (stage === 2) stage2();
-  else if (stage === 3) stage3();
-  else if (stage === 4) stage4();
-  else { stage = 0; stage0(); }
-};
-
-// Start
-stage0();
-</script>
-
-</body>
-</html>
+// -------
