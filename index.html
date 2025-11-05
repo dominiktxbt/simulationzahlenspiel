@@ -10,16 +10,24 @@
   h2 { font-size: 1.3em; margin: 5px 0; }
   #grid {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: 8px;
-    justify-content: center;
+    justify-items: center;
     margin: 20px auto;
-    max-width: 90vw;
+    max-width: 600px;
   }
   button {
-    width: 10vw; height: 10vw; max-width: 70px; max-height: 70px;
-    font-size: 3vw; border: 1px solid #aaa; border-radius: 8px;
-    cursor: pointer; background: white; touch-action: manipulation;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    aspect-ratio: 1/1;
+    font-size: 1.2em;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    cursor: pointer;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
   }
   #controls { margin: 10px auto; }
   #info { margin-top: 10px; padding: 8px; background: #e0e0e0; border-radius: 6px; width: 90%; max-width: 600px; margin-left:auto; margin-right:auto; font-size: 1em; }
@@ -27,13 +35,13 @@
   #nextStage, #cleanBtn, #sortBtn { padding: 10px 20px; font-size: 1em; margin-top: 10px; cursor: pointer; display: none; border-radius: 6px; }
   #stageButtons { margin: 15px auto; }
   #stageButtons button { margin: 0 5px; padding: 6px 12px; font-size: 0.9em; }
-  #grid.stage2 { grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); }
   @media (max-width: 600px){
-    button { width: 12vw; height: 12vw; font-size: 4vw; }
-    #info, #result { font-size: 0.9em; }
+    #grid { grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); }
+    button { font-size: 1em; }
   }
   @media (max-width: 400px){
-    button { width: 14vw; height: 14vw; font-size: 4.5vw; }
+    #grid { grid-template-columns: repeat(auto-fit, minmax(30px, 1fr)); }
+    button { font-size: 0.9em; }
   }
 </style>
 </head>
@@ -41,7 +49,6 @@
 
 <h1>5S Trainingsspiel – Stufen 0–4</h1>
 
-<!-- Buttons für direkten Stufenwechsel -->
 <div id="stageButtons">
   <button onclick="switchStage(0)">Stufe 0</button>
   <button onclick="switchStage(1)">Stufe 1</button>
@@ -65,7 +72,7 @@
 <p id="result"></p>
 
 <script>
-// ===================== Variablen =====================
+// ===== Variablen =====
 const grid = document.getElementById("grid");
 const timerDisplay = document.getElementById("timer");
 const result = document.getElementById("result");
@@ -78,27 +85,25 @@ const info = document.getElementById("info");
 let stage = 0;
 let startTime, timer;
 
-// ===================== Hilfsfunktionen =====================
+// ===== Hilfsfunktionen =====
 function startTimer() { startTime = Date.now(); timer = setInterval(() => { timerDisplay.textContent = ((Date.now()-startTime)/1000).toFixed(1); },100); }
 function stopTimer() { clearInterval(timer); }
 function shuffle(arr) { return arr.sort(()=>Math.random()-0.5); }
 function randomColor() { return "hsl("+Math.floor(Math.random()*360)+",80%,40%)"; }
-
 function createButtons(numbers, onClickFunc, colorFunc=null) {
   grid.innerHTML = "";
   numbers.forEach(n => {
     const b = document.createElement("button");
     b.textContent = n;
-    if(colorFunc) b.style.color = colorFunc(n);
-    else b.style.color = randomColor();
+    b.style.color = colorFunc ? colorFunc(n) : randomColor();
     b.onclick = () => onClickFunc(n,b);
     grid.appendChild(b);
   });
 }
 
-// ===================== Stufen =====================
+// ===== Stufen =====
 
-// -------- Stufe 0 --------
+// --- Stufe 0 ---
 function stage0() {
   stageTitle.textContent="Stufe 0 – Farbenchaos";
   info.textContent="Klicke die Zahlen 1–64 in richtiger Reihenfolge.";
@@ -117,7 +122,7 @@ function stage0() {
   });
 }
 
-// -------- Stufe 1 --------
+// --- Stufe 1 ---
 function stage1() {
   stageTitle.textContent="Stufe 1 – Zahlen 41–64 wegklicken";
   info.textContent="Klicke 41–64, danach 1–40 in Farbenchaos-Spiel.";
@@ -147,7 +152,7 @@ function stage1_ordered() {
   });
 }
 
-// -------- Stufe 2 --------
+// --- Stufe 2 ---
 function stage2() {
   stageTitle.textContent="Stufe 2 – Gruppierungen";
   info.textContent="Klicke 1–40 nach Gruppen in Ecken (1–9,10–19,20–29,30–40).";
@@ -165,7 +170,7 @@ function stage2() {
   });
 }
 
-// -------- Stufe 3 --------
+// --- Stufe 3 ---
 function stage3() {
   stageTitle.textContent="Stufe 3 – Säuberung";
   info.textContent="Klicke 'Säubern', dann Farbenchaos-Spiel erneut.";
@@ -189,7 +194,7 @@ function stage3() {
   };
 }
 
-// -------- Stufe 4 --------
+// --- Stufe 4 ---
 function stage4() {
   stageTitle.textContent="Stufe 4 – Ordnen & Finale";
   info.textContent="Klicke 'Ordnen', danach letzte Reihenfolge-Spiel mit allen Zahlen.";
@@ -202,19 +207,18 @@ function stage4() {
   sortBtn.onclick=()=>{
     sortBtn.style.display="none";
     let orderedNumbers = [...Array(40).keys()].map(x=>x+1);
+    let current=1;
     createButtons(orderedNumbers,(n,b)=>{
-      if(current===undefined) var current=1;
       if(current===1 && !startTime) startTimer();
       if(parseInt(b.textContent)===current){
         b.disabled=true; b.style.background="#8f8"; current++;
         if(current>40){ stopTimer(); result.textContent = `✅ Finale Spiel abgeschlossen in ${((Date.now()-startTime)/1000).toFixed(2)}s`; nextBtn.style.display="inline-block"; }
       } else { b.style.background="#f88"; }
     }, n=>"#000");
-    current=1;
   };
 }
 
-// ===================== Stufensteuerung =====================
+// ===== Stufensteuerung =====
 nextBtn.onclick=()=>{
   stage++;
   if(stage===1) stage1();
@@ -224,7 +228,7 @@ nextBtn.onclick=()=>{
   else { stage=0; stage0(); }
 }
 
-// ===================== Direkter Stufenwechsel =====================
+// ===== Direkter Stufenwechsel =====
 function switchStage(s){
   stage = parseInt(s);
   stopTimer();
@@ -236,7 +240,7 @@ function switchStage(s){
   else if(stage===4) stage4();
 }
 
-// ===================== Start =====================
+// ===== Initialisierung =====
 stage0();
 </script>
 
