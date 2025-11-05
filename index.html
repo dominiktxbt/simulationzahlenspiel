@@ -14,9 +14,9 @@ h2 { font-size: 1.3em; margin: 5px 0; }
 #grid button { width: 100%; aspect-ratio: 1/1; font-size: 1em; border: 1px solid #aaa; border-radius: 6px; cursor: pointer; background: white; display: flex; align-items: center; justify-content: center; touch-action: manipulation; box-sizing: border-box; transition: transform 0.1s, background 0.2s; }
 #grid button:active { transform: scale(0.95); }
 
-/* Quadranten-Container */
-.quadrant-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; max-width: 500px; margin:auto; }
-.quadrant { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+/* Quadranten Container für Stufe 2-4 */
+.quadrant-container { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; max-width: 500px; margin: auto; }
+.quadrant { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; border: 1px dashed #999; padding: 4px; background: #fafafa; }
 
 /* Stufenwechsel-Buttons */
 #stageButtons { margin: 15px auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
@@ -78,16 +78,14 @@ const info=document.getElementById("info");
 
 let stage=0,startTime,timer;
 
-// Hilfsfunktionen
 function startTimer(){ startTime=Date.now(); timer=setInterval(()=>{timerDisplay.textContent=((Date.now()-startTime)/1000).toFixed(1);},100);}
 function stopTimer(){ clearInterval(timer);}
 function shuffle(arr){ return arr.sort(()=>Math.random()-0.5);}
 function randomColor(){ return "hsl("+Math.floor(Math.random()*360)+",80%,40%)";}
 
-// 8x8 Zahlenfeld (Stufe 0,1)
+// 8x8 Grid
 function createGrid(numbers,onClickFunc,colorFunc=null){
-  grid.innerHTML=""; grid.className="";
-  grid.style.gridTemplateColumns="repeat(8,1fr)";
+  grid.innerHTML=""; grid.className=""; grid.style.gridTemplateColumns="repeat(8,1fr)";
   numbers.forEach(n=>{
     const b=document.createElement("button");
     b.textContent=n;
@@ -97,13 +95,13 @@ function createGrid(numbers,onClickFunc,colorFunc=null){
   });
 }
 
-// Quadranten (Stufe 2-4)
+// Quadranten 2x2
 function createQuadrants(numbers,onClickFunc,colorFunc=null){
-  grid.innerHTML=""; grid.className="quadrant-grid";
-  const quadrants=[numbers.slice(0,9),numbers.slice(9,19),numbers.slice(19,29),numbers.slice(29,40)];
-  quadrants.forEach((nums,i)=>{
+  grid.innerHTML=""; grid.className="quadrant-container";
+  const groups=[numbers.slice(0,9),numbers.slice(9,19),numbers.slice(19,29),numbers.slice(29,40)];
+  groups.forEach((grp,i)=>{
     const q=document.createElement("div"); q.className="quadrant";
-    nums.forEach(n=>{
+    grp.forEach(n=>{
       const b=document.createElement("button");
       b.textContent=n;
       b.style.color=colorFunc?colorFunc(n):["#ff6961","#f8d66d","#77dd77","#779ecb"][i];
@@ -119,13 +117,8 @@ function stage0(){
   stageTitle.textContent="Stufe 0 – Farbenchaos";
   info.textContent="Klicke die Zahlen 1–64 in richtiger Reihenfolge.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none"; cleanBtn.style.display="none"; sortBtn.style.display="none"; startTime=null;
-
   let numbers=shuffle([...Array(64).keys()].map(x=>x+1)),current=1;
-  createGrid(numbers,(n,b)=>{
-    if(current===1&&!startTime) startTimer();
-    if(n===current){b.disabled=true;b.style.background="#8f8";current++;if(current>64){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}
-    else{b.style.background="#f88";}
-  });
+  createGrid(numbers,(n,b)=>{if(current===1&&!startTime)startTimer();if(n===current){b.disabled=true;b.style.background="#8f8";current++;if(current>64){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}else{b.style.background="#f88";}});
 }
 
 function stage1(){
@@ -133,9 +126,7 @@ function stage1(){
   info.textContent="Klicke 41–64, danach 1–40 Farbenchaos.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none"; startTime=null;
   let numbers=shuffle([...Array(64).keys()].map(x=>x+1)),removed=0;
-  createGrid(numbers,(n,b)=>{
-    if(n>=41){ b.disabled=true;b.style.background="#f88"; removed++; if(removed===24) stage1_ordered();}
-  });
+  createGrid(numbers,(n,b)=>{if(n>=41){b.disabled=true;b.style.background="#f88"; removed++; if(removed===24) stage1_ordered();}});
 }
 
 function stage1_ordered(){
@@ -143,45 +134,29 @@ function stage1_ordered(){
   info.textContent="Klicke 1–40 in richtiger Reihenfolge.";
   result.textContent=""; timerDisplay.textContent="0.0"; startTime=null;
   let numbers=shuffle([...Array(40).keys()].map(x=>x+1)),current=1;
-  createGrid(numbers,(n,b)=>{
-    if(current===1&&!startTime) startTimer();
-    if(n===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}
-    else{b.style.background="#f88";}
-  });
+  createGrid(numbers,(n,b)=>{if(current===1&&!startTime)startTimer();if(n===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}else{b.style.background="#f88";}});
 }
 
 function stage2(){
   stageTitle.textContent="Stufe 2 – Quadranten";
   info.textContent="Klicke 1–40 innerhalb der Quadranten.";
   result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none";
-
   let numbers=shuffle([...Array(40).keys()].map(x=>x+1)),current=1;
-  createQuadrants(numbers,(n,b)=>{
-    if(current===1&&!startTime) startTimer();
-    if(n===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}
-    else{b.style.background="#f88";}
-  });
+  createQuadrants(numbers,(n,b)=>{if(current===1&&!startTime)startTimer();if(n===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}else{b.style.background="#f88";}});
 }
 
 function stage3(){
   stageTitle.textContent="Stufe 3 – Säuberung";
   info.textContent="Klicke 'Säubern', danach Spiel erneut.";
   result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none"; cleanBtn.style.display="inline-block";
-
   let numbers=shuffle([...Array(40).keys()].map(x=>x+1));
-  createQuadrants(numbers,(n,b)=>{}); // nur anzeigen
-
+  createQuadrants(numbers,(n,b)=>{});
   cleanBtn.onclick=()=>{
     cleanBtn.style.display="none";
     for(let b of grid.querySelectorAll("button")){ b.style.color="#000"; b.disabled=false; b.style.background="white"; }
     let current=1; startTime=null; timerDisplay.textContent="0.0";
     for(let b of grid.querySelectorAll("button")){
-      b.onclick=()=>{
-        if(current===1&&!startTime) startTimer();
-        if(parseInt(b.textContent)===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}
-        else{b.style.background="#f88";}
-      }
-    }
+      b.onclick=()=>{if(current===1&&!startTime)startTimer();if(parseInt(b.textContent)===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}else{b.style.background="#f88";}}}
   };
 }
 
@@ -189,18 +164,12 @@ function stage4(){
   stageTitle.textContent="Stufe 4 – Ordnen & Finale";
   info.textContent="Klicke 'Ordnen', danach letzte Reihenfolge-Spiel mit allen Zahlen.";
   result.textContent=""; timerDisplay.textContent="0.0"; startTime=null; nextBtn.style.display="none"; sortBtn.style.display="inline-block";
-
   let numbers=shuffle([...Array(40).keys()].map(x=>x+1));
   createQuadrants(numbers,(n,b)=>{b.disabled=true;},n=>"#000");
-
   sortBtn.onclick=()=>{
     sortBtn.style.display="none";
     let orderedNumbers=[...Array(40).keys()].map(x=>x+1),current=1;
-    createQuadrants(orderedNumbers,(n,b)=>{
-      if(current===1&&!startTime) startTimer();
-      if(parseInt(b.textContent)===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Finale Spiel abgeschlossen in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}
-      else{b.style.background="#f88";}
-    },n=>"#000");
+    createQuadrants(orderedNumbers,(n,b)=>{if(current===1&&!startTime)startTimer();if(parseInt(b.textContent)===current){b.disabled=true;b.style.background="#8f8";current++;if(current>40){stopTimer();result.textContent=`✅ Finale Spiel abgeschlossen in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}else{b.style.background="#f88";}},n=>"#000");
   };
 }
 
