@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Lean Management – 5S Spiel</title>
+<title>Lean Management – 5S Spiel (Überarbeitet)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -11,140 +12,117 @@
     margin: 0;
     padding: 20px;
   }
-  h2 { color: #333; }
-  #grid {
-    display: grid;
-    grid-template-columns: repeat(8, 60px);
-    gap: 6px;
-    justify-content: center;
-    margin: 20px auto;
-  }
-  button {
-    width: 60px;
-    height: 60px;
-    font-size: 20px;
-    cursor: pointer;
-    border: 1px solid #999;
-    border-radius: 6px;
-    background: white;
-  }
-  #info {
-    background: #e0e0e0;
-    border-radius: 8px;
-    padding: 10px;
-    margin: 10px auto;
-    width: 60%;
-  }
-  #result {
-    margin-top: 20px;
-    font-weight: bold;
-  }
-  #nextStage {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin-top: 10px;
-    cursor: pointer;
-  }
-</style>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  button {
-    width: 12vw;   /* statt fester Pixel → prozentual an Bildschirmbreite */
-    height: 12vw;
-    max-width: 80px;
-    max-height: 80px;
-    font-size: 3vw;
-    touch-action: manipulation; /* Bessere Touch-Reaktion */
-  }
+  h1 { margin-bottom: 10px; }
   #grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     gap: 6px;
     justify-content: center;
+    max-width: 500px;
+    margin: 20px auto;
+  }
+  button {
+    width: 12vw;
+    height: 12vw;
+    max-width: 70px;
+    max-height: 70px;
+    font-size: 3vw;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    cursor: pointer;
+    background: white;
+    touch-action: manipulation;
+  }
+  #controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #info {
+    margin-top: 10px;
+    padding: 8px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #result {
+    font-weight: bold;
+    margin-top: 15px;
   }
 </style>
-
 </head>
 <body>
 
-<h1>Lean Management – 5S Trainingsspiel</h1>
-<h2 id="stageTitle">Stufe 1 – Seiton (Systematisieren)</h2>
-<p id="info">Ordne die Zahlen 1 bis 64 in aufsteigender Reihenfolge.</p>
+<h1>Lean Management – 5S Trainingsspiel (Neue Version)</h1>
+<h2 id="stageTitle">Stufe 0 – Farbenchaos</h2>
+<p id="info">Klicke die Zahlen 1 bis 64 in der richtigen Reihenfolge.</p>
 <p>Zeit: <span id="timer">0.0</span> s</p>
 
 <div id="grid"></div>
+
+<div id="controls">
+  <button id="cleanBtn" style="display:none;">🧹 Säubern</button>
+  <button id="sortBtn" style="display:none;">🔢 Ordnen</button>
+  <button id="nextStage" style="display:none;">➡️ Weiter</button>
+</div>
+
 <p id="result"></p>
-<button id="nextStage" style="display:none;">➡️ Weiter zur nächsten Stufe</button>
 
 <script>
-// ==============================
-// 🔧 Allgemeine Variablen
-// ==============================
-const grid = document.getElementById('grid');
-const timerDisplay = document.getElementById('timer');
-const result = document.getElementById('result');
-const nextBtn = document.getElementById('nextStage');
-const stageTitle = document.getElementById('stageTitle');
-const info = document.getElementById('info');
+const grid = document.getElementById("grid");
+const timerDisplay = document.getElementById("timer");
+const result = document.getElementById("result");
+const nextBtn = document.getElementById("nextStage");
+const cleanBtn = document.getElementById("cleanBtn");
+const sortBtn = document.getElementById("sortBtn");
+const stageTitle = document.getElementById("stageTitle");
+const info = document.getElementById("info");
 
-let stage = 1;
+let stage = 0;
 let timer, startTime;
 
-// ==============================
-// ⏱ Timerfunktionen
-// ==============================
 function startTimer() {
   startTime = Date.now();
   timer = setInterval(() => {
     timerDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
   }, 100);
 }
-function stopTimer() {
-  clearInterval(timer);
+function stopTimer() { clearInterval(timer); }
+
+// Zufall und Farbgenerator
+function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+function randomColor() {
+  return "hsl(" + Math.floor(Math.random() * 360) + ",80%,40%)";
 }
 
-// ==============================
-// 🔹 Hilfsfunktionen
-// ==============================
-function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
-}
-function isPrime(num) {
-  if (num < 2) return false;
-  for (let i = 2; i <= Math.sqrt(num); i++) {
-    if (num % i === 0) return false;
-  }
-  return true;
-}
-
-// ==============================
-// 🧩 STUFE 1 – Systematisieren (Seiton)
-// ==============================
-function startStage1() {
-  stageTitle.textContent = "Stufe 1 – Seiton (Systematisieren)";
-  info.textContent = "Klicke die Zahlen 1 bis 64 in der richtigen Reihenfolge.";
+// ---------- STUFE 0 ----------
+function stage0() {
+  stageTitle.textContent = "Stufe 0 – Farbenchaos";
+  info.textContent = "Klicke die Zahlen 1 bis 64 in richtiger Reihenfolge.";
   result.textContent = "";
-  timerDisplay.textContent = "0.0";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
+  cleanBtn.style.display = "none";
+  sortBtn.style.display = "none";
 
-  let numbers = shuffle(Array.from({length: 64}, (_, i) => i + 1));
-  let current = 1, clicks = [];
-
+  let numbers = shuffle([...Array(64).keys()].map(x => x+1));
+  let current = 1;
   numbers.forEach(n => {
-    let b = document.createElement('button');
+    const b = document.createElement("button");
     b.textContent = n;
+    b.style.color = randomColor();
     b.onclick = () => {
       if (current === 1 && !startTime) startTimer();
       if (n === current) {
         b.disabled = true;
         b.style.background = "#8f8";
-        clicks.push(n);
         current++;
         if (current > 64) {
           stopTimer();
-          let time = ((Date.now() - startTime)/1000).toFixed(2);
-          result.innerHTML = `✅ Fertig in <b>${time}s</b>`;
+          result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
           nextBtn.style.display = "inline-block";
         }
       } else {
@@ -155,123 +133,93 @@ function startStage1() {
   });
 }
 
-// ==============================
-// 🧩 STUFE 2 – Sortieren (Seiri)
-// ==============================
-function startStage2() {
-  stageTitle.textContent = "Stufe 2 – Seiri (Sortieren)";
-  info.textContent = "Sortiere alle Primzahlen (überflüssige Teile) aus.";
+// ---------- STUFE 1 ----------
+function stage1() {
+  stageTitle.textContent = "Stufe 1 – Reduktion";
+  info.textContent = "Zahlen 41–64 aussortieren, dann mit 40 Zahlen weiterspielen.";
   result.textContent = "";
-  timerDisplay.textContent = "0.0";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
 
-  let allNumbers = shuffle(Array.from({length: 64}, (_, i) => i + 1));
-  let primes = allNumbers.filter(isPrime);
-  let correct = 0, wrong = 0;
-
-  allNumbers.forEach(n => {
-    let b = document.createElement('button');
+  let numbers = shuffle([...Array(64).keys()].map(x => x+1));
+  numbers.forEach(n => {
+    const b = document.createElement("button");
     b.textContent = n;
     b.onclick = () => {
-      if (!startTime) startTimer();
-      if (isPrime(n)) {
+      if (n >= 41) {
+        b.disabled = true;
+        b.style.background = "#f88";
+      } else {
         b.disabled = true;
         b.style.background = "#8f8";
-        correct++;
-      } else {
-        b.style.background = "#f88";
-        wrong++;
       }
-      if (correct === primes.length) {
-        stopTimer();
-        let time = ((Date.now() - startTime)/1000).toFixed(2);
-        result.innerHTML = `✅ Alle Primzahlen entfernt in <b>${time}s</b><br>Fehler: ${wrong}`;
-        nextBtn.style.display = "inline-block";
+      if ([...grid.children].filter(btn => !btn.disabled).length === 0) {
+        // Jetzt das 40er Spiel starten
+        setTimeout(() => stage0_reduced(), 1000);
       }
     };
     grid.appendChild(b);
   });
 }
 
-// ==============================
-// 🧩 STUFE 3 – Säubern (Seiso)
-// ==============================
-function startStage3() {
-  stageTitle.textContent = "Stufe 3 – Seiso (Säubern)";
-  info.textContent = "Reinige alle grauen Felder durch Anklicken.";
-  result.textContent = "";
-  timerDisplay.textContent = "0.0";
+function stage0_reduced() {
+  info.textContent = "Spiele mit 40 Zahlen in richtiger Reihenfolge.";
   grid.innerHTML = "";
-  nextBtn.style.display = "none";
-
-  let allNumbers = Array.from({length: 64}, (_, i) => i + 1);
-  let dirtyCount = 0;
-  allNumbers.forEach(n => {
-    let b = document.createElement('button');
+  let numbers = shuffle([...Array(40).keys()].map(x => x+1));
+  let current = 1;
+  numbers.forEach(n => {
+    const b = document.createElement("button");
     b.textContent = n;
-    // 15% der Felder sind verschmutzt
-    if (Math.random() < 0.15) {
-      b.style.background = "#ccc";
-      b.classList.add("dirty");
-      dirtyCount++;
-    }
+    b.style.color = randomColor();
     b.onclick = () => {
-      if (!startTime) startTimer();
-      if (b.classList.contains("dirty")) {
-        b.classList.remove("dirty");
+      if (current === 1 && !startTime) startTimer();
+      if (n === current) {
+        b.disabled = true;
         b.style.background = "#8f8";
-        dirtyCount--;
-        if (dirtyCount === 0) {
+        current++;
+        if (current > 40) {
           stopTimer();
-          let time = ((Date.now() - startTime)/1000).toFixed(2);
-          result.innerHTML = `✅ Arbeitsplatz gereinigt in <b>${time}s</b>`;
+          result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
           nextBtn.style.display = "inline-block";
         }
-      } else {
-        b.style.background = "#f88";
       }
     };
     grid.appendChild(b);
   });
 }
 
-// ==============================
-// 🧩 STUFE 4 – Standardisieren (Seiketsu)
-// ==============================
-function startStage4() {
-  stageTitle.textContent = "Stufe 4 – Seiketsu (Standardisieren)";
-  info.textContent = "Bringe die Farben in die standardisierte Reihenfolge (rot, gelb, grün, blau).";
+// ---------- STUFE 2 ----------
+function stage2() {
+  stageTitle.textContent = "Stufe 2 – Gruppierungen";
+  info.textContent = "Zahlen 1–40 in farbige Gruppen an verschiedenen Positionen.";
   result.textContent = "";
-  timerDisplay.textContent = "0.0";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
 
-  const colors = ["#ff6961", "#f8d66d", "#77dd77", "#779ecb"]; // rot, gelb, grün, blau
-  let correct = 0;
-  let colorMap = {};
+  const colorGroups = ["#ff6961","#f8d66d","#77dd77","#779ecb"];
+  const positions = [[],[],[],[]];
+  let nums = [...Array(40).keys()].map(x=>x+1);
+  nums.forEach(n => {
+    let group = Math.floor((n-1)/10);
+    positions[group].push(n);
+  });
+  let ordered = [...positions[0],...positions[1],...positions[2],...positions[3]];
+  let shuffled = shuffle(ordered);
 
-  for (let i = 1; i <= 64; i++) {
-    let color = colors[Math.floor((i - 1) / 16)];
-    colorMap[i] = color;
-  }
-
-  let shuffled = shuffle(Array.from({length: 64}, (_, i) => i + 1));
-
+  let current = 1;
   shuffled.forEach(n => {
-    let b = document.createElement('button');
+    const b = document.createElement("button");
     b.textContent = n;
+    b.style.color = colorGroups[Math.floor((n-1)/10)];
     b.onclick = () => {
-      if (!startTime) startTimer();
-      if (b.style.backgroundColor === colorMap[n]) {
+      if (current === 1 && !startTime) startTimer();
+      if (n === current) {
+        b.disabled = true;
         b.style.background = "#8f8";
-      } else {
-        b.style.background = colorMap[n];
-        correct++;
-        if (correct === 64) {
+        current++;
+        if (current > 40) {
           stopTimer();
-          let time = ((Date.now() - startTime)/1000).toFixed(2);
-          result.innerHTML = `✅ Standard wiederhergestellt in <b>${time}s</b>`;
+          result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
           nextBtn.style.display = "inline-block";
         }
       }
@@ -280,69 +228,116 @@ function startStage4() {
   });
 }
 
-// ==============================
-// 🧩 STUFE 5 – Selbstdisziplin (Shitsuke)
-// ==============================
-function startStage5() {
-  stageTitle.textContent = "Stufe 5 – Shitsuke (Selbstdisziplin)";
-  info.textContent = "Wiederhole Stufe 1, um deine Zeit zu verbessern! (Ergebnis wird gespeichert)";
+// ---------- STUFE 3 ----------
+function stage3() {
+  stageTitle.textContent = "Stufe 3 – Säuberung";
+  info.textContent = "Klicke 'Säubern', um alle Schriftfarben zu vereinheitlichen, dann spiele erneut.";
   result.textContent = "";
-  timerDisplay.textContent = "0.0";
   grid.innerHTML = "";
   nextBtn.style.display = "none";
+  cleanBtn.style.display = "inline-block";
+  sortBtn.style.display = "none";
 
-  let numbers = shuffle(Array.from({length: 64}, (_, i) => i + 1));
+  let numbers = shuffle([...Array(40).keys()].map(x => x+1));
   let current = 1;
 
   numbers.forEach(n => {
-    let b = document.createElement('button');
+    const b = document.createElement("button");
     b.textContent = n;
+    b.style.color = randomColor();
+    grid.appendChild(b);
+  });
+
+  cleanBtn.onclick = () => {
+    for (let b of grid.children) b.style.color = "#222";
+    cleanBtn.style.display = "none";
+    // Jetzt das normale Spiel starten
+    startColorlessGame();
+  };
+}
+
+function startColorlessGame() {
+  let current = 1;
+  for (let b of grid.children) {
+    const n = parseInt(b.textContent);
+    b.disabled = false;
     b.onclick = () => {
       if (current === 1 && !startTime) startTimer();
       if (n === current) {
         b.disabled = true;
         b.style.background = "#8f8";
         current++;
-        if (current > 64) {
+        if (current > 40) {
           stopTimer();
-          let totalTime = ((Date.now() - startTime)/1000).toFixed(2);
-          let best = localStorage.getItem('bestTime');
-          if (!best || totalTime < best) {
-            localStorage.setItem('bestTime', totalTime);
-            result.innerHTML = `🏆 Neuer Rekord: ${totalTime}s`;
-          } else {
-            result.innerHTML = `✅ Fertig in ${totalTime}s (Bester bisher: ${best}s)`;
-          }
+          result.textContent = `✅ Fertig in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
+          nextBtn.style.display = "inline-block";
         }
       } else {
         b.style.background = "#f88";
       }
     };
-    grid.appendChild(b);
-  });
+  }
 }
 
-// ==============================
-// 🔁 Steuerung der Phasen
-// ==============================
+// ---------- STUFE 4 ----------
+function stage4() {
+  stageTitle.textContent = "Stufe 4 – Standardisieren";
+  info.textContent = "Klicke 'Ordnen', um alle Zahlen zu sortieren, dann spiele ein letztes Mal.";
+  result.textContent = "";
+  grid.innerHTML = "";
+  nextBtn.style.display = "none";
+  sortBtn.style.display = "inline-block";
+  cleanBtn.style.display = "none";
+
+  let numbers = shuffle([...Array(40).keys()].map(x => x+1));
+  numbers.forEach(n => {
+    const b = document.createElement("button");
+    b.textContent = n;
+    b.style.color = "#333";
+    grid.appendChild(b);
+  });
+
+  sortBtn.onclick = () => {
+    grid.innerHTML = "";
+    for (let i=1;i<=40;i++) {
+      const b = document.createElement("button");
+      b.textContent = i;
+      b.style.color = "#333";
+      b.onclick = () => {
+        if (i === 1 && !startTime) startTimer();
+        if (i === current) {
+          b.disabled = true;
+          b.style.background = "#8f8";
+          current++;
+          if (current > 40) {
+            stopTimer();
+            result.textContent = `✅ Letztes Spiel beendet in ${((Date.now()-startTime)/1000).toFixed(2)}s`;
+            nextBtn.style.display = "none";
+          }
+        }
+      };
+      grid.appendChild(b);
+    }
+    sortBtn.style.display = "none";
+    current = 1;
+  };
+}
+
+// ---------- Steuerung ----------
 nextBtn.onclick = () => {
   stage++;
-  grid.innerHTML = "";
-  result.textContent = "";
-  stopTimer();
   startTime = null;
-  if (stage === 2) startStage2();
-  else if (stage === 3) startStage3();
-  else if (stage === 4) startStage4();
-  else if (stage === 5) startStage5();
-  else {
-    stage = 1;
-    startStage1();
-  }
+  stopTimer();
+  if (stage === 1) stage1();
+  else if (stage === 2) stage2();
+  else if (stage === 3) stage3();
+  else if (stage === 4) stage4();
+  else { stage = 0; stage0(); }
 };
 
-// 🔰 Start des Spiels
-startStage1();
+// Start
+stage0();
 </script>
+
 </body>
 </html>
