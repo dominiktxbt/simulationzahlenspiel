@@ -187,29 +187,89 @@ function stage3(){
   };
 }
 
-function stage4(){
-  stageTitle.textContent="Stufe 4 – Standardisieren/Seiketsu";
-  info.textContent="Finde die Fehler im geordneten Feld.";
-  result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none";
-  cleanBtn.style.display="none"; sortBtn.style.display="none";
-  
-  let numbers=[...Array(40).keys()].map(x=>x+1);
-  [numbers[4],numbers[7]]=[numbers[7],numbers[4]];
-  [numbers[15],numbers[33]]=[numbers[33],numbers[15]];
+/* --- Stufe 4: Fehler finden (vertauschte & große Zahlen) --- */
+function stage4() {
+  stageTitle.textContent = "Stufe 4 – Standardisieren/Seiketsu";
+  info.textContent = "Finde alle fehlerhaften Felder!";
+  result.textContent = "";
+  timerDisplay.textContent = "0.0";
+  startTime = null;
+  nextBtn.style.display = "none";
+  cleanBtn.style.display = "none";
+  sortBtn.style.display = "none";
 
-  createGrid(numbers,(n,b)=>{},()=>"#000");
+  // --- Basis: geordnete Zahlen 1–40 ---
+  let numbers = [...Array(40).keys()].map(x => x + 1);
 
-  const allButtons=grid.querySelectorAll("button");
-  allButtons[5].style.fontSize="1.4em";
-  allButtons[20].style.fontSize="1.4em";
+  // --- Zwei zufällige Paare vertauschen ---
+  function swap(arr, i1, i2) {
+    const tmp = arr[i1];
+    arr[i1] = arr[i2];
+    arr[i2] = tmp;
+  }
+  let idx1 = Math.floor(Math.random() * 36);
+  let idx2 = idx1 + 1;
+  let idx3 = Math.floor(Math.random() * 36);
+  let idx4 = idx3 + 1;
+  swap(numbers, idx1, idx2);
+  swap(numbers, idx3, idx4);
+
+  // --- Merke dir die fehlerhaften Zahlen (vertauschte Paare) ---
+  const wrongs = new Set([numbers[idx1], numbers[idx2], numbers[idx3], numbers[idx4]]);
+
+  // --- Zwei zusätzliche "Fehler" mit großer Schrift ---
+  let largeIndices = [];
+  while (largeIndices.length < 2) {
+    let r = Math.floor(Math.random() * numbers.length);
+    if (!largeIndices.includes(r)) largeIndices.push(r);
+  }
+  largeIndices.forEach(i => wrongs.add(numbers[i])); // große Zahlen sind auch Fehler
+
+  // --- Klickverhalten ---
+  let found = new Set();
+
+  // --- Spielfeld erstellen ---
+  grid.innerHTML = "";
+  grid.className = "";
+  grid.style.display = "grid";
+  grid.style.gridTemplateColumns = "repeat(8, 1fr)";
+  grid.style.gap = "6px";
+
+  numbers.forEach((n, i) => {
+    const b = document.createElement("button");
+    b.textContent = n;
+    b.style.color = "#000";
+    b.style.fontSize = "1em";
+
+    // Markiere große Zahlen
+    if (largeIndices.includes(i)) {
+      b.style.fontSize = "1.5em";
+      b.style.fontWeight = "bold";
+    }
+
+    b.onclick = () => {
+      if (wrongs.has(n)) {
+        b.style.background = "#8f8";
+        b.disabled = true;
+        found.add(n);
+
+        if (found.size === wrongs.size) {
+          result.textContent = "✅ Super! Du hast alle Fehler gefunden!";
+          nextBtn.style.display = "inline-block";
+        }
+      } else {
+        b.style.background = "#f88";
+        setTimeout(() => (b.style.background = "white"), 500);
+      }
+    };
+    grid.appendChild(b);
+  });
 }
-
-nextBtn.onclick=()=>{stage++; if(stage===1)stage1();else if(stage===2)stage2();else if(stage===3)stage3();else if(stage===4)stage4();else{stage=0;stage0();}}
-function switchStage(s){stage=parseInt(s); stopTimer(); timerDisplay.textContent="0.0"; result.textContent=""; cleanBtn.style.display="none"; sortBtn.style.display="none"; nextBtn.style.display="none"; if(stage===0)stage0(); else if(stage===1)stage1(); else if(stage===2)stage2(); else if(stage===3)stage3(); else if(stage===4)stage4();}
 
 stage0();
 </script>
 
 </body>
 </html>
+
 
