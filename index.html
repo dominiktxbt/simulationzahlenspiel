@@ -125,7 +125,7 @@ function stage0(){
 }
 
 function stage1(){
-  stageTitle.textContent="Stufe 1 – Zahlen 41–64 wegklicken";
+  stageTitle.textContent="Stufe 1 – Sortieren/Seiri";
   info.textContent="Klicke 41–64, danach 1–40 in richtiger Reihenfolge.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none"; startTime=null;
   let numbers=shuffle([...Array(64).keys()].map(x=>x+1)),removed=0;
@@ -135,7 +135,7 @@ function stage1(){
 }
 
 function stage1_ordered(){
-  stageTitle.textContent="Stufe 1 – Zahlen 1–40 Reihenfolge";
+  stageTitle.textContent="Stufe 1 – Sortieren/Seiri";
   info.textContent="Klicke 1–40 in richtiger Reihenfolge.";
   result.textContent=""; timerDisplay.textContent="0.0"; startTime=null;
   let numbers=shuffle([...Array(40).keys()].map(x=>x+1)),current=1;
@@ -148,7 +148,7 @@ function stage1_ordered(){
 }
 
 function stage2(){
-  stageTitle.textContent="Stufe 2 – Ordnen";
+  stageTitle.textContent="Stufe 2 – Systematisieren/Seiton";
   info.textContent="Klicke 'Ordnen', danach Spiel mit sortierten und bunten Zahlen 1–40.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none"; startTime=null;
   sortBtn.style.display="inline-block"; cleanBtn.style.display="none";
@@ -168,7 +168,7 @@ function stage2(){
 }
 
 function stage3(){
-  stageTitle.textContent="Stufe 3 – Säuberung";
+  stageTitle.textContent="Stufe 3 – Säubern/Seiso";
   info.textContent="Die Zahlen sind geordnet und bunt. Klicke 'Säubern', um sie schwarz-weiß zu machen.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none";
   sortBtn.style.display="none"; cleanBtn.style.display="inline-block";
@@ -188,7 +188,7 @@ function stage3(){
 }
 
 function stage4(){
-  stageTitle.textContent="Stufe 4 – Finale (geordnet mit Fehlern)";
+  stageTitle.textContent="Stufe 4 – Standardisieren/Seiketsu";
   info.textContent="Finde die Fehler im geordneten Feld.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none";
   cleanBtn.style.display="none"; sortBtn.style.display="none";
@@ -212,3 +212,4 @@ stage0();
 
 </body>
 </html>
+
