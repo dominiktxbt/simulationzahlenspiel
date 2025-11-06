@@ -265,11 +265,27 @@ function stage4() {
     grid.appendChild(b);
   });
 }
+function switchStage(s){
+    stage = parseInt(s);
+    stopTimer();
+    timerDisplay.textContent = "0.0";
+    result.textContent = "";
+    cleanBtn.style.display = "none";
+    sortBtn.style.display = "none";
+    nextBtn.style.display = "none";
+
+    if(stage === 0) stage0();
+    else if(stage === 1) stage1();
+    else if(stage === 2) stage2();
+    else if(stage === 3) stage3();
+    else if(stage === 4) stage4();
+}
 
 stage0();
 </script>
 
 </body>
 </html>
+
 
 
