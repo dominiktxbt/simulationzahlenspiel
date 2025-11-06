@@ -149,7 +149,7 @@ function stage1_ordered(){
 
 function stage2(){
   stageTitle.textContent="Stufe 2 – Ordnen";
-  info.textContent="Klicke 'Ordnen', danach Spiel mit sortierten Zahlen 1–40.";
+  info.textContent="Klicke 'Ordnen', danach Spiel mit sortierten und bunten Zahlen 1–40.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none"; startTime=null;
   sortBtn.style.display="inline-block"; cleanBtn.style.display="none";
   let numbers=shuffle([...Array(40).keys()].map(x=>x+1));
@@ -163,18 +163,25 @@ function stage2(){
       if(n===current){b.disabled=true;b.style.background="#8f8";current++;
         if(current>40){stopTimer();result.textContent=`✅ Stufe 2 abgeschlossen in ${((Date.now()-startTime)/1000).toFixed(2)}s`;nextBtn.style.display="inline-block";}}
       else{b.style.background="#f88";}
-    },()=>"#000");
+    },()=>randomColor()); // bunt lassen
   };
 }
 
 function stage3(){
   stageTitle.textContent="Stufe 3 – Säuberung";
-  info.textContent="Klicke 'Säubern', kein Spiel danach.";
+  info.textContent="Die Zahlen sind geordnet und bunt. Klicke 'Säubern', um sie schwarz-weiß zu machen.";
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none";
   sortBtn.style.display="none"; cleanBtn.style.display="inline-block";
-  let numbers=shuffle([...Array(40).keys()].map(x=>x+1));
-  createGrid(numbers,(n,b)=>{b.disabled=true;});
-  cleanBtn.onclick=()=>{for(let b of grid.querySelectorAll("button")){b.style.color="#000"; b.style.background="white";}};
+  
+  let numbers=[...Array(40).keys()].map(x=>x+1);
+  createGrid(numbers,(n,b)=>{b.disabled=true;},()=>randomColor());
+  
+  cleanBtn.onclick=()=>{
+    for(let b of grid.querySelectorAll("button")){ 
+      b.style.color="#000"; 
+      b.style.background="white"; 
+    }
+  };
 }
 
 function stage4(){
@@ -183,14 +190,12 @@ function stage4(){
   result.textContent=""; timerDisplay.textContent="0.0"; nextBtn.style.display="none";
   cleanBtn.style.display="none"; sortBtn.style.display="none";
   
-  // geordnet, aber mit 2 vertauschten Paaren
   let numbers=[...Array(40).keys()].map(x=>x+1);
   [numbers[4],numbers[7]]=[numbers[7],numbers[4]];
   [numbers[15],numbers[33]]=[numbers[33],numbers[15]];
 
   createGrid(numbers,(n,b)=>{},()=>"#000");
 
-  // Zwei Zahlen größer darstellen
   const allButtons=grid.querySelectorAll("button");
   allButtons[5].style.fontSize="1.4em";
   allButtons[20].style.fontSize="1.4em";
