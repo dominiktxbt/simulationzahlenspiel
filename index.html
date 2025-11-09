@@ -280,12 +280,24 @@ function switchStage(s){
     else if(stage === 3) stage3();
     else if(stage === 4) stage4();
 }
+// --- Weiter-Button Funktion ---
+nextBtn.onclick = () => {
+  if (stage === 0) switchStage(1);
+  else if (stage === 1) switchStage(2);
+  else if (stage === 2) switchStage(3);
+  else if (stage === 3) switchStage(4);
+  else if (stage === 4) {
+    result.textContent = "🎉 Glückwunsch! Du hast alle 5S-Stufen abgeschlossen!";
+    nextBtn.style.display = "none";
+  }
+};
 
 stage0();
 </script>
 
 </body>
 </html>
+
 
 
 
